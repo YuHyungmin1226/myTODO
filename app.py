@@ -5,11 +5,38 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
 import sys
+import platform
+
+# 공유 DB 경로 설정
+def get_shared_db_path():
+    """Windows와 macOS 간에 공유할 DB 경로를 반환합니다."""
+    home_dir = os.path.expanduser("~")
+    
+    # 플랫폼별 공유 폴더 설정
+    if platform.system() == "Windows":
+        # Windows: 사용자 홈 디렉토리 내 MyTODO 폴더
+        shared_dir = os.path.join(home_dir, "MyTODO")
+    else:
+        # macOS: 사용자 홈 디렉토리 내 MyTODO 폴더
+        shared_dir = os.path.join(home_dir, "MyTODO")
+    
+    # 공유 폴더가 없으면 생성
+    if not os.path.exists(shared_dir):
+        try:
+            os.makedirs(shared_dir)
+            print(f"📁 공유 폴더가 생성되었습니다: {shared_dir}")
+        except Exception as e:
+            print(f"⚠️  공유 폴더 생성 실패: {e}")
+            # 폴더 생성 실패 시 현재 디렉토리 사용
+            return 'sqlite:///todo.db'
+    
+    db_path = os.path.join(shared_dir, "todo.db")
+    return f'sqlite:///{db_path}'
 
 # Flask 및 DB 설정
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = get_shared_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

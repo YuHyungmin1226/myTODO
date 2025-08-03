@@ -226,8 +226,7 @@ def print_success_info(exe_path, file_size_mb):
     
     print("\n⚠️  주의사항:")
     print("- 첫 실행 시 데이터베이스가 자동으로 생성됩니다")
-    print("- 실행 파일과 같은 폴더에 todo.db 파일이 생성됩니다")
-    print("- 다른 PC로 이동할 때는 todo.db 파일도 함께 복사하세요")
+    print("- 데이터는 ~/MyTODO/todo.db에 저장됩니다 (Windows/macOS 공유)")
     print("- Windows Defender에서 차단될 수 있습니다 (속성에서 '차단 해제' 체크)")
     print("- 기존 프로세스가 있으면 자동으로 종료되고 새로 시작됩니다")
     print("- 포트 충돌 시 자동으로 다른 포트를 선택합니다")
