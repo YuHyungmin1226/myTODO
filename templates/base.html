@@ -62,23 +62,13 @@
     </style>
 </head>
 <body>
-    {% if current_user.is_authenticated %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('dashboard') }}">
-                <i class="fas fa-tasks me-2"></i>할 일 목록
+                <i class="fas fa-tasks me-2"></i>MyTODO
             </a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">
-                    <i class="fas fa-user me-1"></i>{{ current_user.username }}
-                </span>
-                <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">
-                    <i class="fas fa-sign-out-alt me-1"></i>로그아웃
-                </a>
-            </div>
         </div>
     </nav>
-    {% endif %}
 
     <div class="container mt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}

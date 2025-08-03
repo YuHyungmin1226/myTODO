@@ -1,21 +1,11 @@
-# Flask 웹 프레임워크 및 확장
-Flask==2.3.4
-Flask-SQLAlchemy==3.1.1
-Flask-Login==0.6.3
-
-# 데이터베이스 및 유틸리티
-SQLAlchemy==2.0.23
-Werkzeug==2.3.7
-greenlet==3.0.1
-
-# 템플릿 및 보안
-Jinja2==3.1.2
-MarkupSafe==2.1.3
-itsdangerous==2.1.2
-
-# 유틸리티
-click==8.1.7
-blinker==1.7.0
-
-# 실행 파일 생성
-pyinstaller==6.14.2 
+Flask
+Flask-SQLAlchemy
+SQLAlchemy
+Werkzeug
+greenlet
+Jinja2
+MarkupSafe
+itsdangerous
+click
+blinker
+pyinstaller
