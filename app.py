@@ -24,9 +24,9 @@ def get_shared_db_path():
     if not os.path.exists(shared_dir):
         try:
             os.makedirs(shared_dir)
-            print(f"📁 공유 폴더가 생성되었습니다: {shared_dir}")
+            print(f"공유 폴더가 생성되었습니다: {shared_dir}")
         except Exception as e:
-            print(f"⚠️  공유 폴더 생성 실패: {e}")
+            print(f"공유 폴더 생성 실패: {e}")
             # 폴더 생성 실패 시 현재 디렉토리 사용
             return 'sqlite:///todo.db'
     
@@ -224,10 +224,10 @@ def kill_existing_processes():
             import time
             time.sleep(1)  # 프로세스 종료 대기
         else:
-            print("ℹ️  실행 중인 MyTODO 프로세스가 없습니다.")
+            print("실행 중인 MyTODO 프로세스가 없습니다.")
             
     except Exception as e:
-        print(f"⚠️  기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
+        print(f"기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
 
 def find_available_port(start_port=5001, end_port=5010):
     """사용 가능한 포트를 찾습니다."""
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     # 사용 가능한 포트 찾기
     port = find_available_port()
     if port is None:
-        print("❌ 오류: 5001-5010 포트가 모두 사용 중입니다.")
+        print("오류: 5001-5010 포트가 모두 사용 중입니다.")
         print("다른 프로그램을 종료하고 다시 시도하세요.")
         sys.exit(1)
     
