@@ -26,8 +26,11 @@ python app.py
 ### 2. 실행 파일 사용
 
 ```bash
-# macOS (권장)
+# macOS
 ./MyTODO
+
+# Windows
+MyTODO.exe
 
 # 또는 더블클릭으로 실행
 ```
@@ -45,6 +48,7 @@ python app.py
 MyTODO/
 ├── app.py              # 메인 Flask 애플리케이션
 ├── build_macos.py     # macOS 빌드 스크립트 (단일 실행 파일)
+├── build_windows.py   # Windows 빌드 스크립트 (단일 실행 파일)
 ├── requirements.txt    # Python 패키지 목록
 ├── templates/          # HTML 템플릿
 │   ├── base.html      # 기본 템플릿
@@ -74,7 +78,7 @@ MyTODO/
 
 ## 🔧 시스템 요구사항
 
-- **OS**: macOS (Apple Silicon/Intel)
+- **OS**: macOS (Apple Silicon/Intel), Windows 10/11
 - **Python**: 3.8 이상 (개발 환경)
 - **메모리**: 최소 256MB
 - **저장공간**: 최소 50MB
@@ -128,17 +132,21 @@ pip install -r requirements.txt
 
 ## 🏗️ 빌드 및 배포
 
-### macOS 빌드 (권장)
+### macOS 빌드
 ```bash
 python3 build_macos.py
 ```
 
-빌드 후 `dist/MyTODO` 실행 파일이 생성됩니다.
+### Windows 빌드
+```bash
+python build_windows.py
+```
 
 ### 빌드 결과물
-- **단일 실행 파일**: `dist/MyTODO` (약 15MB)
+- **macOS**: `dist/MyTODO` (약 15MB)
+- **Windows**: `dist/MyTODO.exe` (약 15MB)
 - **특징**: 별도 의존성 파일 없이 단일 파일로 배포 가능
-- **플랫폼**: macOS (Apple Silicon/Intel 호환)
+- **플랫폼**: macOS (Apple Silicon/Intel), Windows 10/11
 
 자세한 빌드 가이드는 `BUILD_README.md`를 참조하세요.
 
@@ -156,8 +164,9 @@ python3 build_macos.py
 - Python 3.8 이상 지원
 
 ### 실행 파일 오류
-- macOS: 보안 설정에서 "확인 없이 열기" 허용
-- 실행 권한 문제: `chmod +x MyTODO` 명령어로 권한 부여
+- **macOS**: 보안 설정에서 "확인 없이 열기" 허용
+- **macOS**: 실행 권한 문제: `chmod +x MyTODO` 명령어로 권한 부여
+- **Windows**: Windows Defender에서 차단될 수 있습니다 (속성에서 '차단 해제' 체크)
 
 ## 📞 지원
 
