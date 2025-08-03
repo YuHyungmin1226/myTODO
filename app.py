@@ -182,20 +182,65 @@ def delete_todo(todo_id):
         flash('할 일이 삭제되었습니다.', 'success')
     return redirect(url_for('dashboard'))
 
+def kill_existing_processes():
+    """기존에 실행 중인 MyTODO 프로세스를 종료합니다."""
+    import subprocess
+    import os
+    
+    try:
+        # pkill을 사용하여 MyTODO 프로세스 종료
+        result = subprocess.run(['pkill', '-f', 'MyTODO'], 
+                              capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print("🔄 기존 MyTODO 프로세스가 종료되었습니다.")
+            import time
+            time.sleep(1)  # 프로세스 종료 대기
+        else:
+            print("ℹ️  실행 중인 MyTODO 프로세스가 없습니다.")
+            
+    except Exception as e:
+        print(f"⚠️  기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
+
+def find_available_port(start_port=5001, end_port=5010):
+    """사용 가능한 포트를 찾습니다."""
+    import socket
+    
+    for port in range(start_port, end_port + 1):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            continue
+    return None
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     if getattr(sys, 'frozen', False):
         template_folder = os.path.join(sys._MEIPASS, 'templates')
         app.template_folder = template_folder
+    
+    # 기존 MyTODO 프로세스 종료
+    kill_existing_processes()
+    
+    # 사용 가능한 포트 찾기
+    port = find_available_port()
+    if port is None:
+        print("❌ 오류: 5001-5010 포트가 모두 사용 중입니다.")
+        print("다른 프로그램을 종료하고 다시 시도하세요.")
+        sys.exit(1)
+    
     print("="*50)
     print("MyTODO 할 일 목록 애플리케이션")
     print("="*50)
     print("서버가 시작되었습니다!")
-    print("브라우저에서 http://localhost:5000 으로 접속하세요")
+    print(f"브라우저에서 http://localhost:{port} 으로 접속하세요")
     print("종료하려면 Ctrl+C를 누르세요")
     print("="*50)
+    
     try:
-        app.run(debug=False, host='127.0.0.1', port=5000)
+        app.run(debug=False, host='127.0.0.1', port=port)
     except KeyboardInterrupt:
         print("\n서버가 종료되었습니다.") 
