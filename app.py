@@ -213,36 +213,68 @@ def kill_existing_processes():
     """기존에 실행 중인 MyTODO 프로세스를 종료합니다."""
     import subprocess
     import os
+    import platform
     
     try:
-        # pkill을 사용하여 MyTODO 프로세스 종료
-        result = subprocess.run(['pkill', '-f', 'MyTODO'], 
-                              capture_output=True, text=True)
+        system = platform.system()
         
-        if result.returncode == 0:
-            print("🔄 기존 MyTODO 프로세스가 종료되었습니다.")
-            import time
-            time.sleep(1)  # 프로세스 종료 대기
+        if system == "Windows":
+            # Windows에서는 taskkill 사용
+            result = subprocess.run(['taskkill', '/f', '/im', 'MyTODO.exe'], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0:
+                print("기존 MyTODO 프로세스가 종료되었습니다.")
+            else:
+                print("실행 중인 MyTODO 프로세스가 없습니다.")
         else:
-            print("실행 중인 MyTODO 프로세스가 없습니다.")
+            # macOS/Linux에서는 pkill 사용
+            result = subprocess.run(['pkill', '-f', 'MyTODO'], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0:
+                print("기존 MyTODO 프로세스가 종료되었습니다.")
+            else:
+                print("실행 중인 MyTODO 프로세스가 없습니다.")
+        
+        import time
+        time.sleep(2)  # 프로세스 종료 대기 시간 증가
             
     except Exception as e:
         print(f"기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
 
-def find_available_port(start_port=5001, end_port=5010):
+def find_available_port(start_port=5001, end_port=5020):
     """사용 가능한 포트를 찾습니다."""
     import socket
     
+    print(f"포트 {start_port}-{end_port} 범위에서 사용 가능한 포트를 찾는 중...")
+    
+    # 8080 포트를 제외한 포트 범위에서 검색
+    excluded_ports = {8080}  # 제외할 포트 목록
+    
     for port in range(start_port, end_port + 1):
+        if port in excluded_ports:
+            continue  # 제외된 포트는 건너뛰기
+            
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)  # 타임아웃 설정
                 s.bind(('127.0.0.1', port))
+                s.close()
+                print(f"사용 가능한 포트를 찾았습니다: {port}")
                 return port
         except OSError:
             continue
+    
+    print(f"오류: {start_port}-{end_port} 포트가 모두 사용 중입니다.")
     return None
 
 if __name__ == '__main__':
+    import argparse
+    
+    # 명령행 인수 파싱
+    parser = argparse.ArgumentParser(description='MyTODO 할 일 목록 애플리케이션')
+    parser.add_argument('--host', default='127.0.0.1', help='호스트 주소 (기본값: 127.0.0.1)')
+    args = parser.parse_args()
+    
     with app.app_context():
         db.create_all()
     if getattr(sys, 'frozen', False):
@@ -252,18 +284,25 @@ if __name__ == '__main__':
     # 기존 MyTODO 프로세스 종료
     kill_existing_processes()
     
-    # 사용 가능한 포트 찾기
+    # 자동으로 사용 가능한 포트 찾기
     port = find_available_port()
     if port is None:
-        print("오류: 5001-5010 포트가 모두 사용 중입니다.")
-        print("다른 프로그램을 종료하고 다시 시도하세요.")
+        print("="*60)
+        print("포트 충돌 오류")
+        print("="*60)
+        print("5001-5020 포트가 모두 사용 중입니다.")
+        print("해결 방법:")
+        print("1. 다른 프로그램을 종료하고 다시 시도")
+        print("2. 또는 시스템을 재부팅")
+        print("3. 또는 다른 포트를 사용하는 프로그램을 종료")
+        print("="*60)
         sys.exit(1)
     
     print("="*50)
     print("MyTODO 할 일 목록 애플리케이션")
     print("="*50)
     print("서버가 시작되었습니다!")
-    print(f"브라우저에서 http://localhost:{port} 으로 접속하세요")
+    print(f"브라우저에서 http://{args.host}:{port} 으로 접속하세요")
     print("종료하려면 Ctrl+C를 누르세요")
     print("="*50)
     
@@ -273,6 +312,10 @@ if __name__ == '__main__':
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
         
-        app.run(debug=False, host='127.0.0.1', port=port, use_reloader=False)
+        app.run(debug=False, host=args.host, port=port, use_reloader=False)
     except KeyboardInterrupt:
-        print("\n서버가 종료되었습니다.") 
+        print("\n서버가 종료되었습니다.")
+    except Exception as e:
+        print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
+        print("포트가 이미 사용 중일 수 있습니다.")
+        sys.exit(1) 
