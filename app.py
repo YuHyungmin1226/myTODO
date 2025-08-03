@@ -268,6 +268,11 @@ if __name__ == '__main__':
     print("="*50)
     
     try:
-        app.run(debug=False, host='127.0.0.1', port=port)
+        # 개발 서버 경고 메시지 숨기기
+        import logging
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+        
+        app.run(debug=False, host='127.0.0.1', port=port, use_reloader=False)
     except KeyboardInterrupt:
         print("\n서버가 종료되었습니다.") 
