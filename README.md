@@ -26,16 +26,16 @@ python app.py
 ### 2. 실행 파일 사용
 
 ```bash
-# Windows
-.\MyTODO.exe
-
-# macOS
+# macOS (권장)
 ./MyTODO
+
+# 또는 더블클릭으로 실행
 ```
 
 ### 3. 접속
 
-- **URL**: http://localhost:5000
+- **URL**: http://localhost:5001-5010 (자동으로 사용 가능한 포트 선택)
+- **포트 확인**: 터미널에서 실행 시 표시되는 포트 번호 확인
 - **회원가입**: 처음 사용 시 새 계정 생성
 - **로그인**: 사용자명과 비밀번호로 로그인
 
@@ -43,17 +43,16 @@ python app.py
 
 ```
 MyTODO/
-├── app.py              # 메인 Flask 애플리케이션 (최적화됨)
+├── app.py              # 메인 Flask 애플리케이션
+├── build_macos.py     # macOS 빌드 스크립트 (단일 실행 파일)
 ├── requirements.txt    # Python 패키지 목록
-├── build.py           # Windows 빌드 스크립트
-├── build_macos.py     # macOS 빌드 스크립트
 ├── templates/          # HTML 템플릿
 │   ├── base.html      # 기본 템플릿
 │   ├── login.html     # 로그인 페이지
 │   ├── register.html  # 회원가입 페이지
 │   ├── dashboard.html # 메인 대시보드
 │   └── edit_todo.html # 할 일 수정 페이지
-├── todo.db            # 데이터베이스 (자동 생성)
+├── .gitignore         # Git 제외 파일 설정
 ├── README.md          # 이 파일
 └── BUILD_README.md    # 빌드 가이드
 ```
@@ -75,7 +74,7 @@ MyTODO/
 
 ## 🔧 시스템 요구사항
 
-- **OS**: Windows 10/11, macOS, Linux
+- **OS**: macOS (Apple Silicon/Intel)
 - **Python**: 3.8 이상 (개발 환경)
 - **메모리**: 최소 256MB
 - **저장공간**: 최소 50MB
@@ -129,23 +128,25 @@ pip install -r requirements.txt
 
 ## 🏗️ 빌드 및 배포
 
-### Windows 빌드
+### macOS 빌드 (권장)
 ```bash
-python build.py
+python3 build_macos.py
 ```
 
-### macOS 빌드
-```bash
-python build_macos.py
-```
+빌드 후 `dist/MyTODO` 실행 파일이 생성됩니다.
+
+### 빌드 결과물
+- **단일 실행 파일**: `dist/MyTODO` (약 15MB)
+- **특징**: 별도 의존성 파일 없이 단일 파일로 배포 가능
+- **플랫폼**: macOS (Apple Silicon/Intel 호환)
 
 자세한 빌드 가이드는 `BUILD_README.md`를 참조하세요.
 
 ## 🐛 문제 해결
 
 ### 포트 충돌
-- 기본 포트 5000 사용
-- 다른 포트 사용 중인 경우 `app.py`에서 포트 변경
+- 자동으로 5001-5010 포트 중 사용 가능한 포트 선택
+- 기존 프로세스가 있으면 자동으로 종료 후 새로 시작
 
 ### 데이터베이스 오류
 - `todo.db` 파일 삭제 후 재실행
@@ -155,8 +156,8 @@ python build_macos.py
 - Python 3.8 이상 지원
 
 ### 실행 파일 오류
-- Windows: `MyTODO.exe` 파일이 차단된 경우 속성에서 "차단 해제" 체크
 - macOS: 보안 설정에서 "확인 없이 열기" 허용
+- 실행 권한 문제: `chmod +x MyTODO` 명령어로 권한 부여
 
 ## 📞 지원
 
