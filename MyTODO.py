@@ -10,7 +10,13 @@ KST = timezone(timedelta(hours=9))
 # 데이터베이스 경로 설정
 def get_db_path():
     """데이터베이스 경로를 반환합니다."""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if getattr(sys, 'frozen', False):
+        # PyInstaller로 빌드된 경우
+        current_dir = os.path.dirname(sys.executable)
+    else:
+        # 일반 Python 실행의 경우
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+    
     db_path = os.path.join(current_dir, "todo.db")
     return f'sqlite:///{db_path}'
 
@@ -105,6 +111,19 @@ def delete_todo(todo_id):
     flash('할 일이 삭제되었습니다.', 'success')
     return redirect(url_for('dashboard'))
 
+def find_available_port(start_port=5002, max_attempts=10):
+    """사용 가능한 포트를 찾습니다."""
+    import socket
+    
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            continue
+    return None
+
 if __name__ == '__main__':
     # PyInstaller 호환성을 위한 템플릿 폴더 설정
     if getattr(sys, 'frozen', False):
@@ -114,9 +133,15 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     
-    # 서버 시작
+    # 사용 가능한 포트 찾기
     host = '127.0.0.1'
-    port = 5002
+    port = find_available_port(5002)
+    
+    if port is None:
+        print("❌ 사용 가능한 포트를 찾을 수 없습니다.")
+        print("다른 프로그램을 종료하고 다시 시도해주세요.")
+        input("엔터를 눌러 종료합니다...")
+        sys.exit(1)
     
     print("="*50)
     print("MyTODO 할 일 목록 애플리케이션")
