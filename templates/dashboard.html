@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드 - 할 일 목록{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- 통계 카드 -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">
+                            <i class="fas fa-tasks me-2"></i>전체
+                        </h5>
+                        <h2 class="text-primary">{{ total_todos }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">
+                            <i class="fas fa-clock me-2"></i>진행중
+                        </h5>
+                        <h2 class="text-warning">{{ pending_todos }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">
+                            <i class="fas fa-check-circle me-2"></i>완료
+                        </h5>
+                        <h2 class="text-success">{{ completed_todos }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 필터 버튼 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('dashboard', filter='all') }}" 
+                       class="btn btn-outline-primary {{ 'active' if filter_type == 'all' }}">
+                        <i class="fas fa-list me-1"></i>전체
+                    </a>
+                    <a href="{{ url_for('dashboard', filter='pending') }}" 
+                       class="btn btn-outline-warning {{ 'active' if filter_type == 'pending' }}">
+                        <i class="fas fa-clock me-1"></i>진행중
+                    </a>
+                    <a href="{{ url_for('dashboard', filter='completed') }}" 
+                       class="btn btn-outline-success {{ 'active' if filter_type == 'completed' }}">
+                        <i class="fas fa-check me-1"></i>완료
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 할 일 입력 섹션 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-plus-circle me-2"></i>새 할 일 추가
+                </h5>
+                <form method="POST" action="{{ url_for('add_todo') }}">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <textarea class="form-control" name="content" rows="3" 
+                                          placeholder="할 일을 입력하세요..." required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>추가
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 할 일 목록 섹션 -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-list me-2"></i>할 일 목록
+                    <span class="badge bg-primary ms-2">{{ todos|length }}개</span>
+                </h5>
+                
+                {% if todos %}
+                    <div class="todo-list">
+                        {% for todo in todos %}
+                        <div class="card todo-item {% if todo.completed %}bg-light{% endif %}">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="todo-content {% if todo.completed %}completed{% endif %}">
+                                            <p class="mb-1 flex-grow-1">{{ todo.content }}</p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                {{ todo.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                                {% if todo.completed %}
+                                                    <span class="ms-2">
+                                                        <i class="fas fa-check-circle text-success me-1"></i>
+                                                        완료: {{ todo.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                                    </span>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        {% if not todo.completed %}
+                                            <a href="{{ url_for('complete_todo', todo_id=todo.id) }}" 
+                                               class="btn btn-success btn-sm me-2"
+                                               onclick="return confirm('이 할 일을 완료하시겠습니까?')">
+                                                <i class="fas fa-check me-1"></i>완료
+                                            </a>
+                                            <a href="{{ url_for('edit_todo_form', todo_id=todo.id) }}" 
+                                               class="btn btn-info btn-sm me-2">
+                                                <i class="fas fa-edit me-1"></i>수정
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ url_for('uncomplete_todo', todo_id=todo.id) }}" 
+                                               class="btn btn-warning btn-sm me-2"
+                                               onclick="return confirm('이 할 일을 미완료로 변경하시겠습니까?')">
+                                                <i class="fas fa-undo me-1"></i>취소
+                                            </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('delete_todo', todo_id=todo.id) }}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('정말 삭제하시겠습니까?')">
+                                            <i class="fas fa-trash me-1"></i>삭제
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">할 일이 없습니다</h5>
+                        <p class="text-muted">새로운 할 일을 추가해보세요!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .todo-content p {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    }
+    
+    .todo-item {
+        border-left: 4px solid #667eea;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .todo-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .todo-item.completed {
+        border-left-color: #28a745;
+    }
+    
+    .completed {
+        text-decoration: line-through;
+        color: #6c757d;
+        opacity: 0.7;
+    }
+    
+    @media (max-width: 768px) {
+        .col-md-4.text-end {
+            text-align: left !important;
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %} 
