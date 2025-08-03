@@ -15,24 +15,24 @@
 
 ### 기본 실행
 ```bash
-python app.py
+python MyTODO.py
 ```
 
 ### 특정 호스트로 실행
 ```bash
-python app.py --host 0.0.0.0
+python MyTODO.py --host 0.0.0.0
 ```
 
 ### 도움말 보기
 ```bash
-python app.py --help
+python MyTODO.py --help
 ```
 
 ## 📁 프로젝트 구조
 
 ```
 MyTODO/
-├── app.py                 # 메인 애플리케이션
+├── MyTODO.py             # 메인 애플리케이션
 ├── requirements.txt       # Python 패키지 의존성
 ├── templates/            # HTML 템플릿
 │   ├── base.html         # 기본 레이아웃
@@ -53,7 +53,7 @@ MyTODO/
    ```
 3. **애플리케이션 실행**
    ```bash
-   python app.py
+   python MyTODO.py
    ```
 4. **브라우저에서 접속**
    - 자동 선택된 포트로 접속 (5001-5020 범위)
@@ -69,7 +69,7 @@ MyTODO/
 ### 📁 파일 구조
 ```
 MyTODO/
-├── app.py                 # 메인 애플리케이션
+├── MyTODO.py             # 메인 애플리케이션
 ├── todo.db               # 데이터베이스 (자동 생성)
 ├── requirements.txt       # Python 패키지 의존성
 ├── templates/            # HTML 템플릿
@@ -86,12 +86,12 @@ MyTODO/
 
 #### USB 사용
 1. **USB에 복사**: 전체 MyTODO 폴더를 USB에 복사
-2. **다른 PC에서 실행**: USB를 다른 PC에 연결하여 실행
+2. **다른 PC에서 실행**: USB를 다른 PC에 연결하여 `python MyTODO.py` 실행
 3. **데이터 동기화**: USB의 `todo.db` 파일이 모든 PC에서 동일하게 사용됨
 
 #### 로컬 PC 사용
 1. **로컬 폴더**: PC의 원하는 폴더에 MyTODO 저장
-2. **독립적 사용**: 각 PC에서 독립적으로 데이터 관리
+2. **독립적 사용**: 각 PC에서 `python MyTODO.py`로 독립적으로 데이터 관리
 3. **백업**: 필요시 `todo.db` 파일을 다른 위치에 복사
 
 ## 🔧 포트 관리
