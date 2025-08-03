@@ -1,21 +1,26 @@
 # MyTODO - 할 일 목록 애플리케이션 📝
 
-간단하고 효율적인 할 일 목록 관리 애플리케이션입니다. 사용자 인증, 할 일 추가/수정/완료/삭제 기능을 제공합니다.
+간단하고 효율적인 할 일 목록 관리 애플리케이션입니다. 포터블 사용을 위해 설계되었으며, 할 일 추가/수정/완료/삭제 기능을 제공합니다.
 
 ## ✨ 주요 기능
 
-- 🔐 **사용자 인증**: 회원가입 및 로그인 시스템
 - 📝 **할 일 관리**: 추가, 수정, 완료, 삭제
 - ✅ **완료 상태**: 완료된 할 일에 취소선 표시
 - 🔄 **실시간 업데이트**: 즉시 반영되는 변경사항
 - 💾 **데이터 저장**: SQLite 데이터베이스 사용
 - 🌐 **웹 인터페이스**: 브라우저에서 접근 가능
+- 🚀 **포터블 사용**: USB나 로컬 PC에서 즉시 사용 가능
 
 ## 🚀 실행 방법
 
 ### 기본 실행
 ```bash
 python MyTODO.py
+```
+
+### Windows 배치 파일 실행 (권장)
+```bash
+MyTODO.bat
 ```
 
 ### 특정 호스트로 실행
@@ -33,13 +38,13 @@ python MyTODO.py --help
 ```
 MyTODO/
 ├── MyTODO.py             # 메인 애플리케이션
+├── MyTODO.bat            # Windows 실행 배치 파일
 ├── requirements.txt       # Python 패키지 의존성
 ├── templates/            # HTML 템플릿
 │   ├── base.html         # 기본 레이아웃
-│   ├── login.html        # 로그인 페이지
-│   ├── register.html     # 회원가입 페이지
 │   ├── dashboard.html    # 메인 대시보드
 │   └── edit_todo.html    # 할 일 수정 페이지
+├── todo.db               # 데이터베이스 (자동 생성)
 ├── README.md             # 프로젝트 설명서
 └── .gitignore           # Git 무시 파일
 ```
@@ -70,12 +75,11 @@ MyTODO/
 ```
 MyTODO/
 ├── MyTODO.py             # 메인 애플리케이션
+├── MyTODO.bat            # Windows 실행 배치 파일
 ├── todo.db               # 데이터베이스 (자동 생성)
 ├── requirements.txt       # Python 패키지 의존성
 ├── templates/            # HTML 템플릿
 │   ├── base.html         # 기본 레이아웃
-│   ├── login.html        # 로그인 페이지
-│   ├── register.html     # 회원가입 페이지
 │   ├── dashboard.html    # 메인 대시보드
 │   └── edit_todo.html    # 할 일 수정 페이지
 ├── README.md             # 프로젝트 설명서
@@ -93,6 +97,25 @@ MyTODO/
 1. **로컬 폴더**: PC의 원하는 폴더에 MyTODO 저장
 2. **독립적 사용**: 각 PC에서 `python MyTODO.py`로 독립적으로 데이터 관리
 3. **백업**: 필요시 `todo.db` 파일을 다른 위치에 복사
+
+## 🚀 포터블 사용 가이드
+
+### USB 사용 (권장)
+1. **전체 폴더 복사**: MyTODO 폴더 전체를 USB에 복사
+2. **다른 PC에서 실행**: 
+   - USB를 다른 PC에 연결
+   - `MyTODO.bat` 더블클릭 또는 `python MyTODO.py` 실행
+3. **데이터 동기화**: USB의 `todo.db` 파일이 모든 PC에서 동일하게 사용됨
+
+### 로컬 PC 사용
+1. **로컬 폴더**: PC의 원하는 폴더에 MyTODO 저장
+2. **독립적 사용**: 각 PC에서 독립적으로 데이터 관리
+3. **백업**: 필요시 `todo.db` 파일을 다른 위치에 복사
+
+### 실행 파일 대신 배치 파일 사용
+- **이유**: PyInstaller 실행 파일에 문제가 있어 배치 파일로 대체
+- **장점**: 더 안정적이고 오류 메시지 확인 가능
+- **사용법**: `MyTODO.bat` 더블클릭
 
 ## 🔧 포트 관리
 
