@@ -2,13 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
-import sys
-import platform
 
-# 공유 DB 경로 설정
+# 데이터베이스 경로 설정
 def get_db_path():
     """데이터베이스 경로를 반환합니다."""
-    # 실행 파일과 같은 디렉토리에 DB 저장
     current_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.join(current_dir, "todo.db")
     return f'sqlite:///{db_path}'
@@ -21,7 +18,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# 할 일 모델 (사용자 연결 제거)
+# 할 일 모델
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
@@ -29,7 +26,7 @@ class Todo(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime, nullable=True)
 
-# 메인 대시보드 (로그인 불필요)
+# 메인 대시보드
 @app.route('/')
 def dashboard():
     filter_type = request.args.get('filter', 'all')
@@ -40,7 +37,7 @@ def dashboard():
         query = query.filter_by(completed=False)
     todos = query.order_by(Todo.created_at.desc()).all()
     
-    # 통계 한 번에 계산
+    # 통계 계산
     all_todos = Todo.query.all()
     total_todos = len(all_todos)
     completed_todos = sum(1 for t in all_todos if t.completed)
@@ -48,7 +45,7 @@ def dashboard():
     
     return render_template('dashboard.html', todos=todos, filter_type=filter_type, total_todos=total_todos, completed_todos=completed_todos, pending_todos=pending_todos)
 
-# 할 일 관리 (로그인 불필요)
+# 할 일 관리
 @app.route('/add_todo', methods=['POST'])
 def add_todo():
     content = request.form['content'].strip()
@@ -104,65 +101,13 @@ def delete_todo(todo_id):
     flash('할 일이 삭제되었습니다.', 'success')
     return redirect(url_for('dashboard'))
 
-def kill_existing_processes():
-    """기존에 실행 중인 MyTODO 프로세스를 종료합니다."""
-    import subprocess
-    import os
-    import platform
-    
-    try:
-        system = platform.system()
-        exe_name = os.path.basename(sys.executable)
-        script_name = os.path.basename(sys.argv[0])
-        current_pid = os.getpid()
-
-        if system == "Windows":
-            # MyTODO.exe 프로세스 종료 시도
-            if exe_name.lower() == 'mytodo.exe':
-                result = subprocess.run(['taskkill', '/f', '/im', 'MyTODO.exe'], capture_output=True, text=True)
-                if result.returncode == 0:
-                    print("기존 MyTODO.exe 프로세스가 종료되었습니다.")
-                else:
-                    print("실행 중인 MyTODO.exe 프로세스가 없습니다.")
-            
-            # Python으로 실행된 경우, MyTODO.py 프로세스 종료 (자기 자신은 제외)
-            if script_name.lower() == 'mytodo.py':
-                result = subprocess.run([
-                    'wmic', 'process', 'where',
-                    f'name="python.exe" and commandline like "%MyTODO.py%" and processid!={current_pid}',
-                    'call', 'terminate'
-                ], capture_output=True, text=True)
-                if result.returncode == 0:
-                    print("기존 MyTODO.py Python 프로세스가 종료되었습니다.")
-                else:
-                    print("실행 중인 MyTODO.py Python 프로세스가 없습니다.")
-        else:
-            # macOS/Linux에서는 MyTODO 관련 프로세스 종료
-            result = subprocess.run(['pkill', '-f', 'MyTODO'], capture_output=True, text=True)
-            if result.returncode == 0:
-                print("기존 MyTODO 프로세스가 종료되었습니다.")
-            else:
-                print("실행 중인 MyTODO 프로세스가 없습니다.")
-
-        import time
-        time.sleep(1)  # 프로세스 종료 대기 시간
-    except Exception as e:
-        print(f"기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    if getattr(sys, 'frozen', False):
-        template_folder = os.path.join(sys._MEIPASS, 'templates')
-        app.template_folder = template_folder
     
-    # 기존 MyTODO 프로세스 종료
-    kill_existing_processes()
-    
-    # 고정 호스트 및 포트 사용
+    # 서버 시작
     host = '127.0.0.1'
     port = 5002
-    print(f"포트 {port}를 사용합니다.")
     
     print("="*50)
     print("MyTODO 할 일 목록 애플리케이션")
@@ -170,26 +115,11 @@ if __name__ == '__main__':
     print(f"서버가 시작되었습니다! 브라우저에서 http://{host}:{port} 으로 접속하세요")
     print("종료하려면 Ctrl+C를 누르세요")
     print("="*50)
+    
     try:
-        # 개발 서버 경고 메시지 숨기기
-        import logging
-        log = logging.getLogger('werkzeug')
-        log.setLevel(logging.ERROR)
-
         app.run(debug=False, host=host, port=port, use_reloader=False)
     except KeyboardInterrupt:
         print("\n서버가 종료되었습니다.")
-    except OSError as e:
-        if hasattr(e, 'errno') and e.errno in (98, 10048):  # 98: Linux/macOS, 10048: Windows
-            print(f"\n[오류] 포트 {port}가 이미 사용 중입니다.")
-            print("다른 MyTODO 인스턴스가 실행 중이거나, 해당 포트를 사용하는 다른 프로그램이 있습니다.")
-            print("기존 프로세스를 종료하거나 다른 포트를 사용하세요.")
-            input("엔터를 눌러 종료합니다...")
-        else:
-            print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
-            input("엔터를 눌러 종료합니다...")
-        sys.exit(1)
     except Exception as e:
         print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
         input("엔터를 눌러 종료합니다...")
-        sys.exit(1)
