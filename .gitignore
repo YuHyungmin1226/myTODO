@@ -22,3 +22,17 @@ instance/
 
 # PyInstaller
 *.spec
+
+# Portable packages
+MyTODO_Portable/
+MyTODO_Portable.zip
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -112,36 +112,40 @@ def kill_existing_processes():
     
     try:
         system = platform.system()
-        
+        exe_name = os.path.basename(sys.executable)
+        script_name = os.path.basename(sys.argv[0])
+        current_pid = os.getpid()
+
         if system == "Windows":
-            # Windows에서는 taskkill 사용
-            result = subprocess.run(['taskkill', '/f', '/im', 'MyTODO.exe'], 
-                                  capture_output=True, text=True)
-            if result.returncode == 0:
-                print("기존 MyTODO.exe 프로세스가 종료되었습니다.")
-            else:
-                print("실행 중인 MyTODO.exe 프로세스가 없습니다.")
+            # MyTODO.exe 프로세스 종료 시도
+            if exe_name.lower() == 'mytodo.exe':
+                result = subprocess.run(['taskkill', '/f', '/im', 'MyTODO.exe'], capture_output=True, text=True)
+                if result.returncode == 0:
+                    print("기존 MyTODO.exe 프로세스가 종료되었습니다.")
+                else:
+                    print("실행 중인 MyTODO.exe 프로세스가 없습니다.")
             
-            # MyTODO 관련 Python 프로세스만 종료 (현재 프로세스는 제외)
-            current_pid = os.getpid()
-            result = subprocess.run(['wmic', 'process', 'where', f'name="python.exe" and commandline like "%MyTODO.py%" and processid!={current_pid}', 'call', 'terminate'], 
-                                  capture_output=True, text=True)
-            if result.returncode == 0:
-                print("기존 MyTODO Python 프로세스가 종료되었습니다.")
-            else:
-                print("실행 중인 MyTODO Python 프로세스가 없습니다.")
+            # Python으로 실행된 경우, MyTODO.py 프로세스 종료 (자기 자신은 제외)
+            if script_name.lower() == 'mytodo.py':
+                result = subprocess.run([
+                    'wmic', 'process', 'where',
+                    f'name="python.exe" and commandline like "%MyTODO.py%" and processid!={current_pid}',
+                    'call', 'terminate'
+                ], capture_output=True, text=True)
+                if result.returncode == 0:
+                    print("기존 MyTODO.py Python 프로세스가 종료되었습니다.")
+                else:
+                    print("실행 중인 MyTODO.py Python 프로세스가 없습니다.")
         else:
-            # macOS/Linux에서는 pkill 사용
-            result = subprocess.run(['pkill', '-f', 'MyTODO'], 
-                                  capture_output=True, text=True)
+            # macOS/Linux에서는 MyTODO 관련 프로세스 종료
+            result = subprocess.run(['pkill', '-f', 'MyTODO'], capture_output=True, text=True)
             if result.returncode == 0:
                 print("기존 MyTODO 프로세스가 종료되었습니다.")
             else:
                 print("실행 중인 MyTODO 프로세스가 없습니다.")
-        
+
         import time
-        time.sleep(2)  # 프로세스 종료 대기 시간 증가
-            
+        time.sleep(1)  # 프로세스 종료 대기 시간
     except Exception as e:
         print(f"기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
 
@@ -166,7 +170,6 @@ if __name__ == '__main__':
     print(f"서버가 시작되었습니다! 브라우저에서 http://{host}:{port} 으로 접속하세요")
     print("종료하려면 Ctrl+C를 누르세요")
     print("="*50)
-    
     try:
         # 개발 서버 경고 메시지 숨기기
         import logging
@@ -175,22 +178,18 @@ if __name__ == '__main__':
 
         app.run(debug=False, host=host, port=port, use_reloader=False)
     except KeyboardInterrupt:
-        print("
-서버가 종료되었습니다.")
+        print("\n서버가 종료되었습니다.")
     except OSError as e:
         if hasattr(e, 'errno') and e.errno in (98, 10048):  # 98: Linux/macOS, 10048: Windows
-            print(f"
-[오류] 포트 {port}가 이미 사용 중입니다.")
+            print(f"\n[오류] 포트 {port}가 이미 사용 중입니다.")
             print("다른 MyTODO 인스턴스가 실행 중이거나, 해당 포트를 사용하는 다른 프로그램이 있습니다.")
             print("기존 프로세스를 종료하거나 다른 포트를 사용하세요.")
             input("엔터를 눌러 종료합니다...")
         else:
-            print(f"
-서버 실행 중 오류가 발생했습니다: {e}")
+            print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
             input("엔터를 눌러 종료합니다...")
         sys.exit(1)
     except Exception as e:
-        print(f"
-서버 실행 중 오류가 발생했습니다: {e}")
+        print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
         input("엔터를 눌러 종료합니다...")
         sys.exit(1)
