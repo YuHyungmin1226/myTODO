@@ -272,11 +272,21 @@ if __name__ == '__main__':
         import logging
         log = logging.getLogger('werkzeug')
         log.setLevel(logging.ERROR)
-        
+
         app.run(debug=False, host=args.host, port=port, use_reloader=False)
     except KeyboardInterrupt:
         print("\n서버가 종료되었습니다.")
+    except OSError as e:
+        if hasattr(e, 'errno') and e.errno in (98, 10048):  # 98: Linux/macOS, 10048: Windows
+            print(f"\n[오류] 포트 {port}가 이미 사용 중입니다.")
+            print("다른 MyTODO 인스턴스가 실행 중이거나, 해당 포트를 사용하는 다른 프로그램이 있습니다.")
+            print("기존 프로세스를 종료하거나 다른 포트를 사용하세요.")
+            input("엔터를 눌러 종료합니다...")
+        else:
+            print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
+            input("엔터를 눌러 종료합니다...")
+        sys.exit(1)
     except Exception as e:
         print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
-        print("포트 5002가 이미 사용 중일 수 있습니다.")
-        sys.exit(1) 
+        input("엔터를 눌러 종료합니다...")
+        sys.exit(1)
