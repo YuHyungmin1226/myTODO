@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import sys
+
+# 한국 시간대 설정
+KST = timezone(timedelta(hours=9))
 
 # 데이터베이스 경로 설정
 def get_db_path():
@@ -24,7 +27,7 @@ class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     completed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(KST))
     completed_at = db.Column(db.DateTime, nullable=True)
 
 # 메인 대시보드
@@ -80,7 +83,7 @@ def edit_todo(todo_id):
 def complete_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     todo.completed = True
-    todo.completed_at = datetime.utcnow()
+    todo.completed_at = datetime.now(KST)
     db.session.commit()
     flash('할 일이 완료되었습니다.', 'success')
     return redirect(url_for('dashboard'))
