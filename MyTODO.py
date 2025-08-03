@@ -20,7 +20,7 @@ def get_db_path():
     return f'sqlite:///{db_path}'
 
 # Flask 및 DB 설정
-app = Flask(__name__)
+app = Flask('MyTODO')
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -215,7 +215,7 @@ def kill_existing_processes():
             
             # MyTODO 관련 Python 프로세스만 종료 (현재 프로세스는 제외)
             current_pid = os.getpid()
-            result = subprocess.run(['wmic', 'process', 'where', f'name="python.exe" and commandline like "%app.py%" and processid!={current_pid}', 'call', 'terminate'], 
+            result = subprocess.run(['wmic', 'process', 'where', f'name="python.exe" and commandline like "%MyTODO.py%" and processid!={current_pid}', 'call', 'terminate'], 
                                   capture_output=True, text=True)
             if result.returncode == 0:
                 print("기존 MyTODO Python 프로세스가 종료되었습니다.")

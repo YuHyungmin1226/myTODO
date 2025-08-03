@@ -118,7 +118,7 @@ MyTODO/
 ### 포트 충돌
 ```bash
 # 다른 포트 사용
-python app.py --port 8080
+python MyTODO.py --port 8080
 
 # 또는 기존 프로세스 종료 후 재시작
 ```
@@ -127,7 +127,7 @@ python app.py --port 8080
 ```bash
 # 데이터베이스 재생성
 rm ~/MyTODO/todo.db
-python app.py
+python MyTODO.py
 ```
 
 ### 권한 오류
