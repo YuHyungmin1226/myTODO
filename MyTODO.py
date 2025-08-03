@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
+import sys
 
 # 데이터베이스 경로 설정
 def get_db_path():
@@ -102,6 +103,11 @@ def delete_todo(todo_id):
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
+    # PyInstaller 호환성을 위한 템플릿 폴더 설정
+    if getattr(sys, 'frozen', False):
+        template_folder = os.path.join(sys._MEIPASS, 'templates')
+        app.template_folder = template_folder
+    
     with app.app_context():
         db.create_all()
     
