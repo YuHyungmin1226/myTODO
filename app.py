@@ -8,35 +8,21 @@ import sys
 import platform
 
 # 공유 DB 경로 설정
-def get_shared_db_path():
-    """Windows와 macOS 간에 공유할 DB 경로를 반환합니다."""
-    home_dir = os.path.expanduser("~")
-    
-    # 플랫폼별 공유 폴더 설정
-    if platform.system() == "Windows":
-        # Windows: 사용자 홈 디렉토리 내 MyTODO 폴더
-        shared_dir = os.path.join(home_dir, "MyTODO")
-    else:
-        # macOS: 사용자 홈 디렉토리 내 MyTODO 폴더
-        shared_dir = os.path.join(home_dir, "MyTODO")
-    
-    # 공유 폴더가 없으면 생성
-    if not os.path.exists(shared_dir):
-        try:
-            os.makedirs(shared_dir)
-            print(f"공유 폴더가 생성되었습니다: {shared_dir}")
-        except Exception as e:
-            print(f"공유 폴더 생성 실패: {e}")
-            # 폴더 생성 실패 시 현재 디렉토리 사용
-            return 'sqlite:///todo.db'
-    
-    db_path = os.path.join(shared_dir, "todo.db")
+
+
+
+
+def get_db_path():
+    """데이터베이스 경로를 반환합니다."""
+    # 실행 파일과 같은 디렉토리에 DB 저장
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(current_dir, "todo.db")
     return f'sqlite:///{db_path}'
 
 # Flask 및 DB 설정
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = get_shared_db_path()
+app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -63,7 +49,7 @@ class Todo(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # 인증 라우트
 @app.route('/')
@@ -223,9 +209,18 @@ def kill_existing_processes():
             result = subprocess.run(['taskkill', '/f', '/im', 'MyTODO.exe'], 
                                   capture_output=True, text=True)
             if result.returncode == 0:
-                print("기존 MyTODO 프로세스가 종료되었습니다.")
+                print("기존 MyTODO.exe 프로세스가 종료되었습니다.")
             else:
-                print("실행 중인 MyTODO 프로세스가 없습니다.")
+                print("실행 중인 MyTODO.exe 프로세스가 없습니다.")
+            
+            # MyTODO 관련 Python 프로세스만 종료 (현재 프로세스는 제외)
+            current_pid = os.getpid()
+            result = subprocess.run(['wmic', 'process', 'where', f'name="python.exe" and commandline like "%app.py%" and processid!={current_pid}', 'call', 'terminate'], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0:
+                print("기존 MyTODO Python 프로세스가 종료되었습니다.")
+            else:
+                print("실행 중인 MyTODO Python 프로세스가 없습니다.")
         else:
             # macOS/Linux에서는 pkill 사용
             result = subprocess.run(['pkill', '-f', 'MyTODO'], 
@@ -241,31 +236,7 @@ def kill_existing_processes():
     except Exception as e:
         print(f"기존 프로세스 종료를 시도했지만 실패했습니다: {e}")
 
-def find_available_port(start_port=5001, end_port=5020):
-    """사용 가능한 포트를 찾습니다."""
-    import socket
-    
-    print(f"포트 {start_port}-{end_port} 범위에서 사용 가능한 포트를 찾는 중...")
-    
-    # 8080 포트를 제외한 포트 범위에서 검색
-    excluded_ports = {8080}  # 제외할 포트 목록
-    
-    for port in range(start_port, end_port + 1):
-        if port in excluded_ports:
-            continue  # 제외된 포트는 건너뛰기
-            
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(1)  # 타임아웃 설정
-                s.bind(('127.0.0.1', port))
-                s.close()
-                print(f"사용 가능한 포트를 찾았습니다: {port}")
-                return port
-        except OSError:
-            continue
-    
-    print(f"오류: {start_port}-{end_port} 포트가 모두 사용 중입니다.")
-    return None
+
 
 if __name__ == '__main__':
     import argparse
@@ -284,19 +255,9 @@ if __name__ == '__main__':
     # 기존 MyTODO 프로세스 종료
     kill_existing_processes()
     
-    # 자동으로 사용 가능한 포트 찾기
-    port = find_available_port()
-    if port is None:
-        print("="*60)
-        print("포트 충돌 오류")
-        print("="*60)
-        print("5001-5020 포트가 모두 사용 중입니다.")
-        print("해결 방법:")
-        print("1. 다른 프로그램을 종료하고 다시 시도")
-        print("2. 또는 시스템을 재부팅")
-        print("3. 또는 다른 포트를 사용하는 프로그램을 종료")
-        print("="*60)
-        sys.exit(1)
+    # 5002 포트 고정 사용
+    port = 5002
+    print(f"포트 5002를 사용합니다.")
     
     print("="*50)
     print("MyTODO 할 일 목록 애플리케이션")
@@ -317,5 +278,5 @@ if __name__ == '__main__':
         print("\n서버가 종료되었습니다.")
     except Exception as e:
         print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
-        print("포트가 이미 사용 중일 수 있습니다.")
+        print("포트 5002가 이미 사용 중일 수 있습니다.")
         sys.exit(1) 
