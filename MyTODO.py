@@ -141,6 +141,10 @@ def get_local_ip():
         return ip_address
     except Exception:
         return "127.0.0.1"
+
+def find_available_port(start_port=5002, max_attempts=10):
+    """사용 가능한 포트를 찾습니다."""
+    import socket
     
     for port in range(start_port, start_port + max_attempts):
         try:
