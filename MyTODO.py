@@ -26,7 +26,7 @@ def get_db_path():
 
 # Flask 및 DB 설정
 app = Flask('MyTODO')
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+app.config['SECRET_KEY'] = 'your_fixed_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
