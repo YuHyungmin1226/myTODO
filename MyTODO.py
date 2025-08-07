@@ -129,6 +129,18 @@ def delete_todo(todo_id):
 def find_available_port(start_port=5002, max_attempts=10):
     """사용 가능한 포트를 찾습니다."""
     import socket
+
+def get_local_ip():
+    """현재 시스템의 로컬 IP 주소를 반환합니다."""
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+        return ip_address
+    except Exception:
+        return "127.0.0.1"
     
     for port in range(start_port, start_port + max_attempts):
         try:
@@ -151,6 +163,7 @@ if __name__ == '__main__':
     # 사용 가능한 포트 찾기
     host = '127.0.0.1'
     port = find_available_port(5002)
+    local_ip = get_local_ip()
     
     if port is None:
         app.logger.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
@@ -160,7 +173,10 @@ if __name__ == '__main__':
     app.logger.info("="*50)
     app.logger.info("MyTODO 할 일 목록 애플리케이션")
     app.logger.info("="*50)
-    app.logger.info(f"서버가 시작되었습니다! 브라우저에서 http://{host}:{port} 으로 접속하세요")
+    app.logger.info(f"서버가 시작되었습니다!")
+    app.logger.info(f"로컬:   http://{host}:{port}")
+    if local_ip != '127.0.0.1':
+        app.logger.info(f"네트워크: http://{local_ip}:{port}")
     app.logger.info("종료하려면 Ctrl+C를 누르세요")
     app.logger.info("="*50)
     
