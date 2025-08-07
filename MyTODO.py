@@ -128,7 +128,15 @@ def delete_todo(todo_id):
 
 def find_available_port(start_port=5002, max_attempts=10):
     """사용 가능한 포트를 찾습니다."""
-    import socket
+    
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            continue
+    return None
 
 def get_local_ip():
     """현재 시스템의 로컬 IP 주소를 반환합니다."""
@@ -141,19 +149,6 @@ def get_local_ip():
         return ip_address
     except Exception:
         return "127.0.0.1"
-
-def find_available_port(start_port=5002, max_attempts=10):
-    """사용 가능한 포트를 찾습니다."""
-    import socket
-    
-    for port in range(start_port, start_port + max_attempts):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('127.0.0.1', port))
-                return port
-        except OSError:
-            continue
-    return None
 
 if __name__ == '__main__':
     # PyInstaller 호환성을 위한 템플릿 폴더 설정
