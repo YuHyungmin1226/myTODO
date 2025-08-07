@@ -3,6 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone, timedelta
 import os
 import sys
+import logging
+from flask_wtf import FlaskForm
+from wtforms import StringField
+from wtforms.validators import DataRequired, Length
 
 # 한국 시간대 설정
 KST = timezone(timedelta(hours=9))
@@ -22,7 +26,7 @@ def get_db_path():
 
 # Flask 및 DB 설정
 app = Flask('MyTODO')
-app.config['SECRET_KEY'] = os.urandom(24).hex()
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
 app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -36,9 +40,14 @@ class Todo(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(KST))
     completed_at = db.Column(db.DateTime, nullable=True)
 
+
+class TodoForm(FlaskForm):
+    content = StringField('할 일', validators=[DataRequired(), Length(min=1, max=200)])
+
 # 메인 대시보드
 @app.route('/')
 def dashboard():
+    form = TodoForm()
     filter_type = request.args.get('filter', 'all')
     query = Todo.query
     if filter_type == 'completed':
@@ -53,36 +62,42 @@ def dashboard():
     completed_todos = sum(1 for t in all_todos if t.completed)
     pending_todos = total_todos - completed_todos
     
-    return render_template('dashboard.html', todos=todos, filter_type=filter_type, total_todos=total_todos, completed_todos=completed_todos, pending_todos=pending_todos)
+    return render_template('dashboard.html', todos=todos, form=form, filter_type=filter_type, total_todos=total_todos, completed_todos=completed_todos, pending_todos=pending_todos)
 
 # 할 일 관리
 @app.route('/add_todo', methods=['POST'])
 def add_todo():
-    content = request.form['content'].strip()
-    if content:
+    form = TodoForm()
+    if form.validate_on_submit():
+        content = form.content.data
         todo = Todo(content=content)
         db.session.add(todo)
         db.session.commit()
         flash('할 일이 추가되었습니다.', 'success')
     else:
-        flash('할 일 내용을 입력해주세요.', 'error')
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{error}', 'error')
     return redirect(url_for('dashboard'))
 
 @app.route('/edit_todo/<int:todo_id>', methods=['GET'])
 def edit_todo_form(todo_id):
     todo = Todo.query.get_or_404(todo_id)
-    return render_template('edit_todo.html', todo=todo)
+    form = TodoForm(obj=todo)
+    return render_template('edit_todo.html', todo=todo, form=form)
 
 @app.route('/edit_todo/<int:todo_id>', methods=['POST'])
 def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
-    content = request.form['content'].strip()
-    if content:
-        todo.content = content
+    form = TodoForm()
+    if form.validate_on_submit():
+        todo.content = form.content.data
         db.session.commit()
         flash('할 일이 수정되었습니다.', 'success')
     else:
-        flash('할 일 내용을 입력해주세요.', 'error')
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{error}', 'error')
     return redirect(url_for('dashboard'))
 
 @app.route('/complete_todo/<int:todo_id>')
@@ -138,22 +153,21 @@ if __name__ == '__main__':
     port = find_available_port(5002)
     
     if port is None:
-        print("❌ 사용 가능한 포트를 찾을 수 없습니다.")
-        print("다른 프로그램을 종료하고 다시 시도해주세요.")
+        app.logger.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
         input("엔터를 눌러 종료합니다...")
         sys.exit(1)
     
-    print("="*50)
-    print("MyTODO 할 일 목록 애플리케이션")
-    print("="*50)
-    print(f"서버가 시작되었습니다! 브라우저에서 http://{host}:{port} 으로 접속하세요")
-    print("종료하려면 Ctrl+C를 누르세요")
-    print("="*50)
+    app.logger.info("="*50)
+    app.logger.info("MyTODO 할 일 목록 애플리케이션")
+    app.logger.info("="*50)
+    app.logger.info(f"서버가 시작되었습니다! 브라우저에서 http://{host}:{port} 으로 접속하세요")
+    app.logger.info("종료하려면 Ctrl+C를 누르세요")
+    app.logger.info("="*50)
     
     try:
         app.run(debug=False, host=host, port=port, use_reloader=False)
     except KeyboardInterrupt:
-        print("\n서버가 종료되었습니다.")
+        app.logger.info("\n서버가 종료되었습니다.")
     except Exception as e:
-        print(f"\n서버 실행 중 오류가 발생했습니다: {e}")
+        app.logger.error(f"\n서버 실행 중 오류가 발생했습니다: {e}")
         input("엔터를 눌러 종료합니다...")
