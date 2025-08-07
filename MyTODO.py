@@ -145,7 +145,7 @@ def get_local_ip():
     try:
         # 호스트 이름을 통해 IP 주소 가져오기
         ip_address = socket.gethostbyname(socket.gethostname())
-        # 127.0.0.1이 아닌 실제 네트워크 IP를 찾기 위한 추가 확인
+        # 127.0.0.1이거나, gethostbyname이 실패한 경우
         if ip_address == "127.0.0.1":
             # 모든 네트워크 인터페이스를 확인하여 127.0.0.1이 아닌 IP 찾기
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         db.create_all()
     
     # 사용 가능한 포트 찾기
-    host = '0.0.0.0'
+    host = get_local_ip()
     port = find_available_port(5002)
     local_ip = get_local_ip()
     
