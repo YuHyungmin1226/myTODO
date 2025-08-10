@@ -26,7 +26,7 @@ def get_db_path():
 
 # Flask 및 DB 설정
 app = Flask('MyTODO')
-app.config['SECRET_KEY'] = 'your_fixed_secret_key_here'
+app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -74,31 +74,23 @@ def add_todo():
         db.session.add(todo)
         db.session.commit()
         flash('할 일이 추가되었습니다.', 'success')
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f'{error}', 'error')
+    
     return redirect(url_for('dashboard'))
 
-@app.route('/edit_todo/<int:todo_id>', methods=['GET'])
-def edit_todo_form(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    form = TodoForm(obj=todo)
-    return render_template('edit_todo.html', todo=todo, form=form)
-
-@app.route('/edit_todo/<int:todo_id>', methods=['POST'])
+@app.route('/edit_todo/<int:todo_id>', methods=['GET', 'POST'])
 def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
-    form = TodoForm()
+    form = TodoForm(obj=todo)
     if form.validate_on_submit():
         todo.content = form.content.data
         db.session.commit()
         flash('할 일이 수정되었습니다.', 'success')
-    else:
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f'{error}', 'error')
-    return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard'))
+    
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(f'{error}', 'error')
+    return render_template('edit_todo.html', todo=todo, form=form)
 
 @app.route('/complete_todo/<int:todo_id>')
 def complete_todo(todo_id):
@@ -166,29 +158,30 @@ if __name__ == '__main__':
         db.create_all()
     
     # 사용 가능한 포트 찾기
-    host = get_local_ip()
     port = find_available_port(5002)
-    local_ip = get_local_ip()
     
     if port is None:
-        app.logger.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
+        logging.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
         input("엔터를 눌러 종료합니다...")
         sys.exit(1)
     
-    app.logger.info("="*50)
-    app.logger.info("MyTODO 할 일 목록 애플리케이션")
-    app.logger.info("="*50)
-    app.logger.info(f"서버가 시작되었습니다!")
-    app.logger.info(f"로컬:   http://{host}:{port}")
+    host = '0.0.0.0'
+    local_ip = get_local_ip()
+
+    print("="*50)
+    print("MyTODO 할 일 목록 애플리케이션")
+    print("="*50)
+    print(f"서버가 시작되었습니다!")
+    print(f"로컬:   http://127.0.0.1:{port}")
     if local_ip != '127.0.0.1':
-        app.logger.info(f"네트워크: http://{local_ip}:{port}")
-    app.logger.info("종료하려면 Ctrl+C를 누르세요")
-    app.logger.info("="*50)
+        print(f"네트워크: http://{local_ip}:{port}")
+    print("종료하려면 Ctrl+C를 누르세요")
+    print("="*50)
     
     try:
         app.run(debug=False, host=host, port=port, use_reloader=False)
     except KeyboardInterrupt:
-        app.logger.info("\n서버가 종료되었습니다.")
+        print("서버가 종료되었습니다.")
     except Exception as e:
-        app.logger.error(f"\n서버 실행 중 오류가 발생했습니다: {e}")
+        logging.error(f"서버 실행 중 오류가 발생했습니다: {e}")
         input("엔터를 눌러 종료합니다...")
