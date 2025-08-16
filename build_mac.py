@@ -50,6 +50,10 @@ def build_portable_mac():
         '--hidden-import=jinja2.loaders',
         '--hidden-import=jinja2.environment',
         '--hidden-import=jinja2.templating',
+        '--hidden-import=codecs',       # 인코딩 지원
+        '--hidden-import=locale',       # 로케일 지원
+        '--collect-all=jinja2',         # Jinja2 전체 수집
+        '--collect-all=flask',          # Flask 전체 수집
         'MyTODO.py'                     # 메인 스크립트
     ]
     
@@ -68,6 +72,12 @@ def build_portable_mac():
 def build_app_bundle():
     """앱 번들 빌드"""
     print("🍎 macOS 앱 번들 빌드를 시작합니다...")
+    
+    # 기존 앱 빌드 디렉터리 정리
+    app_build_dir = "app_build"
+    if os.path.exists(app_build_dir):
+        shutil.rmtree(app_build_dir)
+        print("✅ 기존 앱 빌드 디렉터리를 정리했습니다.")
     
     # 현재 디렉터리
     current_dir = os.path.abspath(".")
@@ -91,6 +101,10 @@ def build_app_bundle():
         '--hidden-import=jinja2.loaders',
         '--hidden-import=jinja2.environment',
         '--hidden-import=jinja2.templating',
+        '--hidden-import=codecs',       # 인코딩 지원
+        '--hidden-import=locale',       # 로케일 지원
+        '--collect-all=jinja2',         # Jinja2 전체 수집
+        '--collect-all=flask',          # Flask 전체 수집
         'MyTODO.py'                     # 메인 스크립트
     ]
     

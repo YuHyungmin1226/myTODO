@@ -1,8 +1,33 @@
+# -*- coding: utf-8 -*-
+"""
+MyTODO - 할 일 목록 관리 애플리케이션
+UTF-8 인코딩으로 작성되었습니다.
+"""
+
+import sys
+import locale
+import codecs
+
+# 시스템 인코딩 설정
+if sys.platform.startswith('darwin'):  # macOS
+    try:
+        locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        except locale.Error:
+            pass
+
+# 표준 출력/입력 인코딩 설정
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone, timedelta
 import os
-import sys
 import logging
 from flask_wtf import FlaskForm
 from wtforms import StringField
@@ -29,6 +54,14 @@ app = Flask('MyTODO')
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = get_db_path()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# 인코딩 설정
+app.config['JSON_AS_ASCII'] = False
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
+# Jinja2 템플릿 인코딩 설정
+app.jinja_env.default_encoding = 'utf-8'
+app.jinja_env.auto_reload = True
 
 db = SQLAlchemy(app)
 

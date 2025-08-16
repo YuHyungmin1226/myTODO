@@ -1,6 +1,6 @@
 # MyTODO - 할 일 목록 애플리케이션 📝
 
-간단하고 효율적인 할 일 목록 관리 애플리케이션입니다. 완전한 포터블 사용을 위해 설계되었으며, 할 일 추가/수정/완료/삭제 기능을 제공합니다.
+간단하고 효율적인 할 일 목록 관리 애플리케이션입니다. 완전한 포터블 사용을 위해 설계되었으며, 할 일 추가/수정/완료/삭제 기능을 제공합니다. **Windows와 macOS 모두 지원**합니다.
 
 ## ✨ 주요 기능
 
@@ -11,14 +11,27 @@
 - 🌐 **웹 인터페이스**: 브라우저에서 접근 가능
 - 🚀 **완전한 포터블**: Python 설치 없이도 사용 가능
 - 🇰🇷 **한국 시간대**: 정확한 한국 시간 표시
+- 🍎 **macOS 지원**: 네이티브 앱 번들 및 포터블 버전
+- 🔤 **유니코드 지원**: 한글 텍스트 완벽 지원
 
 ## 🚀 실행 방법
 
-### 완전한 포터블 사용 (권장)
+### Windows용 포터블 사용
 1. **다운로드**: `MyTODO_Portable.zip` 파일 다운로드
 2. **압축 해제**: USB나 원하는 폴더에 압축 해제
 3. **실행**: `MyTODO.exe` 더블클릭
 4. **접속**: 브라우저에서 `http://127.0.0.1:5002` 접속
+
+### macOS용 포터블 사용
+1. **다운로드**: `MyTODO_Portable_Mac` 폴더 다운로드
+2. **실행 방법 1**: `MyTODO.command` 파일 더블클릭
+3. **실행 방법 2**: 터미널에서 `./MyTODO` 실행
+4. **접속**: 브라우저에서 `http://127.0.0.1:5002` 접속
+
+### macOS 앱 번들 사용
+1. **다운로드**: `MyTODO.app` 앱 번들 다운로드
+2. **실행**: 앱 번들 더블클릭
+3. **접속**: 브라우저에서 `http://127.0.0.1:5002` 접속
 
 ### 개발자용 실행
 ```bash
@@ -32,19 +45,24 @@ python MyTODO.py
 # http://127.0.0.1:5002
 ```
 
-### 포터블 패키지 생성
+## 🔨 빌드 방법
+
+### Windows용 빌드
 ```bash
 # PyInstaller 설치
 pip install pyinstaller
 
-# 포터블 패키지 생성
-pyinstaller --onedir --name MyTODO --add-data "templates;templates" MyTODO.py
+# Windows용 포터블 패키지 생성
+python build.py
+```
 
-# 생성된 파일들을 MyTODO_Portable 폴더로 복사
-xcopy dist\MyTODO MyTODO_Portable /E /I
+### macOS용 빌드
+```bash
+# PyInstaller 설치
+pip install pyinstaller
 
-# ZIP 파일 생성
-powershell Compress-Archive -Path "MyTODO_Portable" -DestinationPath "MyTODO_Portable.zip" -Force
+# macOS용 포터블 패키지 및 앱 번들 생성
+python build_mac.py
 ```
 
 ## 📁 프로젝트 구조
@@ -53,6 +71,8 @@ powershell Compress-Archive -Path "MyTODO_Portable" -DestinationPath "MyTODO_Por
 MyTODO/
 ├── MyTODO.py             # 메인 애플리케이션
 ├── requirements.txt      # Python 패키지 의존성
+├── build.py             # Windows용 빌드 스크립트
+├── build_mac.py         # macOS용 빌드 스크립트
 ├── templates/            # HTML 템플릿
 │   ├── base.html         # 기본 레이아웃
 │   ├── dashboard.html    # 메인 대시보드
@@ -87,10 +107,28 @@ MyTODO/
 - `templates` 폴더가 실행 파일과 같은 위치에 있는지 확인
 - `--add-data "templates;templates"` 옵션으로 템플릿 포함
 
+### macOS 유니코드 인코딩 오류
+- ✅ **해결됨**: 최신 버전에서 유니코드 텍스트 인코딩 문제가 해결되었습니다
+- **원인**: PyInstaller 빌드 시 인코딩 처리 부족
+- **해결책**: 
+  - Python 코드에 UTF-8 인코딩 설정 추가
+  - Flask/Jinja2 인코딩 설정 추가
+  - PyInstaller 빌드 옵션에 인코딩 관련 모듈 포함
+
+### macOS 보안 경고
+- macOS에서 "확인되지 않은 개발자" 경고가 나타날 수 있습니다
+- 시스템 환경설정 > 보안 및 개인 정보 보호에서 "허용" 선택
+
 ## 📦 시스템 요구사항
 
-### 포터블 버전
-- **운영체제**: Windows
+### Windows 포터블 버전
+- **운영체제**: Windows 10 이상
+- **메모리**: 최소 100MB
+- **디스크**: 최소 50MB
+
+### macOS 포터블 버전
+- **운영체제**: macOS 10.14 이상
+- **아키텍처**: Intel 또는 Apple Silicon (M1/M2)
 - **메모리**: 최소 100MB
 - **디스크**: 최소 50MB
 
@@ -108,6 +146,7 @@ MyTODO/
 - **PyInstaller** (포터블 패키지 생성)
 - **Bootstrap 5** (UI 프레임워크)
 - **Font Awesome** (아이콘)
+- **UTF-8 인코딩** (한글 지원)
 
 ## 📦 패키지 목록
 
@@ -124,6 +163,15 @@ SQLAlchemy==2.0.23
 typing_extensions==4.8.0
 greenlet==3.0.1
 ```
+
+## 🔄 최근 업데이트
+
+### v2.0.0 (2025-08-16)
+- ✅ **macOS 지원 추가**: 네이티브 앱 번들 및 포터블 버전
+- ✅ **유니코드 인코딩 문제 해결**: 한글 텍스트 완벽 지원
+- ✅ **빌드 스크립트 개선**: Windows/macOS 전용 빌드 도구
+- ✅ **로케일 설정 추가**: 한국어 환경 최적화
+- ✅ **Flask/Jinja2 인코딩 설정**: UTF-8 완전 지원
 
 ---
 
