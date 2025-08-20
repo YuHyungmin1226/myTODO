@@ -52,6 +52,10 @@ def build_portable():
         '--hidden-import=jinja2.templating',
         '--hidden-import=flask_wtf',
         '--hidden-import=wtforms',
+        '--hidden-import=codecs',       # 인코딩 지원
+        '--hidden-import=locale',       # 로케일 지원
+        '--collect-all=jinja2',         # Jinja2 전체 수집
+        '--collect-all=flask',          # Flask 전체 수집
         main_script_path                     # 메인 스크립트
     ]
     

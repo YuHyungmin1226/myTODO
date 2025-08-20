@@ -17,6 +17,17 @@ if sys.platform.startswith('darwin'):  # macOS
             locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         except locale.Error:
             pass
+elif sys.platform.startswith('win'):  # Windows
+    try:
+        locale.setlocale(locale.LC_ALL, 'Korean_Korea.UTF-8')
+    except locale.Error:
+        try:
+            locale.setlocale(locale.LC_ALL, 'ko_KR.UTF-8')
+        except locale.Error:
+            try:
+                locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            except locale.Error:
+                pass
 
 # 표준 출력/입력 인코딩 설정
 if hasattr(sys.stdout, 'reconfigure'):
