@@ -37,12 +37,24 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from datetime import datetime, timezone, timedelta
 import os
 import logging
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.validators import DataRequired, Length
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('mytodo.log', encoding='utf-8')
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # 한국 시간대 설정
 KST = timezone(timedelta(hours=9))
@@ -113,11 +125,21 @@ def dashboard():
 def add_todo():
     form = TodoForm()
     if form.validate_on_submit():
-        content = form.content.data
-        todo = Todo(content=content)
-        db.session.add(todo)
-        db.session.commit()
-        flash('할 일이 추가되었습니다.', 'success')
+        try:
+            content = form.content.data
+            todo = Todo(content=content)
+            db.session.add(todo)
+            db.session.commit()
+            flash('할 일이 추가되었습니다.', 'success')
+            logger.info(f"새 할 일 추가: {content[:50]}...")
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"할 일 추가 중 오류: {e}")
+            flash('할 일 추가 중 오류가 발생했습니다.', 'error')
+    else:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{error}', 'error')
     
     return redirect(url_for('dashboard'))
 
@@ -126,10 +148,16 @@ def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     form = TodoForm(obj=todo)
     if form.validate_on_submit():
-        todo.content = form.content.data
-        db.session.commit()
-        flash('할 일이 수정되었습니다.', 'success')
-        return redirect(url_for('dashboard'))
+        try:
+            todo.content = form.content.data
+            db.session.commit()
+            flash('할 일이 수정되었습니다.', 'success')
+            logger.info(f"할 일 수정: ID {todo_id}, 내용: {todo.content[:50]}...")
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"할 일 수정 중 오류: {e}")
+            flash('할 일 수정 중 오류가 발생했습니다.', 'error')
     
     for field, errors in form.errors.items():
         for error in errors:
@@ -138,29 +166,50 @@ def edit_todo(todo_id):
 
 @app.route('/complete_todo/<int:todo_id>')
 def complete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    todo.completed = True
-    todo.completed_at = datetime.now(KST)
-    db.session.commit()
-    flash('할 일이 완료되었습니다.', 'success')
-    return redirect(url_for('dashboard'))
+    try:
+        todo = Todo.query.get_or_404(todo_id)
+        todo.completed = True
+        todo.completed_at = datetime.now(KST)
+        db.session.commit()
+        flash('할 일이 완료되었습니다.', 'success')
+        logger.info(f"할 일 완료: ID {todo_id}")
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"할 일 완료 처리 중 오류: {e}")
+        flash('할 일 완료 처리 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('dashboard'))
 
 @app.route('/uncomplete_todo/<int:todo_id>')
 def uncomplete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    todo.completed = False
-    todo.completed_at = None
-    db.session.commit()
-    flash('할 일이 미완료로 변경되었습니다.', 'success')
-    return redirect(url_for('dashboard'))
+    try:
+        todo = Todo.query.get_or_404(todo_id)
+        todo.completed = False
+        todo.completed_at = None
+        db.session.commit()
+        flash('할 일이 미완료로 변경되었습니다.', 'success')
+        logger.info(f"할 일 미완료 변경: ID {todo_id}")
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"할 일 미완료 변경 중 오류: {e}")
+        flash('할 일 미완료 변경 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('dashboard'))
 
 @app.route('/delete_todo/<int:todo_id>')
 def delete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    db.session.delete(todo)
-    db.session.commit()
-    flash('할 일이 삭제되었습니다.', 'success')
-    return redirect(url_for('dashboard'))
+    try:
+        todo = Todo.query.get_or_404(todo_id)
+        db.session.delete(todo)
+        db.session.commit()
+        flash('할 일이 삭제되었습니다.', 'success')
+        logger.info(f"할 일 삭제: ID {todo_id}")
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"할 일 삭제 중 오류: {e}")
+        flash('할 일 삭제 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('dashboard'))
 
 def find_available_port(start_port=5002, max_attempts=10):
     """사용 가능한 포트를 찾습니다."""
@@ -192,6 +241,17 @@ def get_local_ip():
     except Exception:
         return "127.0.0.1"
 
+def check_database_connection():
+    """데이터베이스 연결 상태를 확인합니다."""
+    try:
+        # 간단한 쿼리로 연결 테스트
+        db.session.execute(text('SELECT 1'))
+        db.session.commit()
+        return True
+    except Exception as e:
+        logger.error(f"데이터베이스 연결 확인 실패: {e}")
+        return False
+
 if __name__ == '__main__':
     # PyInstaller 호환성을 위한 템플릿 폴더 설정
     if getattr(sys, 'frozen', False):
@@ -199,13 +259,25 @@ if __name__ == '__main__':
         app.template_folder = template_folder
     
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            logger.info("데이터베이스 테이블이 생성되었습니다.")
+            
+            # 데이터베이스 연결 확인
+            if not check_database_connection():
+                raise Exception("데이터베이스 연결에 실패했습니다.")
+                
+        except Exception as e:
+            logger.error(f"데이터베이스 초기화 중 오류: {e}")
+            print(f"데이터베이스 초기화 중 오류가 발생했습니다: {e}")
+            input("엔터를 눌러 종료합니다...")
+            sys.exit(1)
     
     # 사용 가능한 포트 찾기
     port = find_available_port(5002)
     
     if port is None:
-        logging.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
+        logger.error("❌ 사용 가능한 포트를 찾을 수 없습니다. 다른 프로그램을 종료하고 다시 시도해주세요.")
         input("엔터를 눌러 종료합니다...")
         sys.exit(1)
     
@@ -223,9 +295,12 @@ if __name__ == '__main__':
     print("="*50)
     
     try:
+        logger.info(f"서버 시작: {host}:{port}")
         app.run(debug=False, host=host, port=port, use_reloader=False)
     except KeyboardInterrupt:
+        logger.info("사용자에 의해 서버가 종료되었습니다.")
         print("서버가 종료되었습니다.")
     except Exception as e:
-        logging.error(f"서버 실행 중 오류가 발생했습니다: {e}")
+        logger.error(f"서버 실행 중 오류가 발생했습니다: {e}")
+        print(f"서버 실행 중 오류가 발생했습니다: {e}")
         input("엔터를 눌러 종료합니다...")

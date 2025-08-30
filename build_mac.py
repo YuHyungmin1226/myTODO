@@ -52,6 +52,7 @@ def build_portable_mac():
         '--hidden-import=jinja2.templating',
         '--hidden-import=codecs',       # 인코딩 지원
         '--hidden-import=locale',       # 로케일 지원
+        '--hidden-import=sqlalchemy.text',  # SQLAlchemy text 지원
         '--collect-all=jinja2',         # Jinja2 전체 수집
         '--collect-all=flask',          # Flask 전체 수집
         'MyTODO.py'                     # 메인 스크립트
@@ -103,6 +104,7 @@ def build_app_bundle():
         '--hidden-import=jinja2.templating',
         '--hidden-import=codecs',       # 인코딩 지원
         '--hidden-import=locale',       # 로케일 지원
+        '--hidden-import=sqlalchemy.text',  # SQLAlchemy text 지원
         '--collect-all=jinja2',         # Jinja2 전체 수집
         '--collect-all=flask',          # Flask 전체 수집
         'MyTODO.py'                     # 메인 스크립트

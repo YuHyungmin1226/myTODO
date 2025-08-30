@@ -109,8 +109,12 @@
                                             <p class="mb-1 flex-grow-1">{{ todo.content }}</p>
                                             <small class="text-muted">
                                                 <i class="fas fa-clock me-1"></i>
-                                                {{ todo.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                                {% if todo.completed %}
+                                                {% if todo.created_at %}
+                                                    {{ todo.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                                {% else %}
+                                                    날짜 없음
+                                                {% endif %}
+                                                {% if todo.completed and todo.completed_at %}
                                                     <span class="ms-2">
                                                         <i class="fas fa-check-circle text-success me-1"></i>
                                                         완료: {{ todo.completed_at.strftime('%Y-%m-%d %H:%M') }}
@@ -126,7 +130,7 @@
                                                onclick="return confirm('이 할 일을 완료하시겠습니까?')">
                                                 <i class="fas fa-check me-1"></i>완료
                                             </a>
-                                            <a href="{{ url_for('edit_todo_form', todo_id=todo.id) }}" 
+                                            <a href="{{ url_for('edit_todo', todo_id=todo.id) }}" 
                                                class="btn btn-info btn-sm me-2">
                                                 <i class="fas fa-edit me-1"></i>수정
                                             </a>

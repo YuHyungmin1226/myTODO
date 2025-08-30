@@ -54,6 +54,8 @@ def build_portable():
         '--hidden-import=wtforms',
         '--hidden-import=codecs',       # 인코딩 지원
         '--hidden-import=locale',       # 로케일 지원
+        '--hidden-import=logging',      # 로깅 지원
+        '--hidden-import=sqlalchemy.text',  # SQLAlchemy text 지원
         '--collect-all=jinja2',         # Jinja2 전체 수집
         '--collect-all=flask',          # Flask 전체 수집
         main_script_path                     # 메인 스크립트
