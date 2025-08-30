@@ -124,14 +124,14 @@
                                             <small class="text-muted">
                                                 <i class="fas fa-clock me-1"></i>
                                                 {% if todo.created_at %}
-                                                    {{ todo.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                                    {{ todo.created_at | kst }}
                                                 {% else %}
                                                     날짜 없음
                                                 {% endif %}
                                                 {% if todo.completed and todo.completed_at %}
                                                     <span class="ms-2">
                                                         <i class="fas fa-check-circle text-success me-1"></i>
-                                                        완료: {{ todo.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                                        완료: {{ todo.completed_at | kst }}
                                                     </span>
                                                 {% endif %}
                                             </small>

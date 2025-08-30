@@ -110,6 +110,20 @@ app.jinja_env.auto_reload = True
 
 db = SQLAlchemy(app)
 
+# KST 시간 포맷을 위한 Jinja 필터
+@app.template_filter('kst')
+def kst_filter(dt):
+    if dt is None:
+        return ''
+    
+    # DB에서 읽어온 시간이 timezone 정보가 없는 naive datetime일 경우 (주로 SQLite), UTC로 간주
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    
+    # KST로 변환하여 포맷팅
+    return dt.astimezone(KST).strftime('%Y-%m-%d %H:%M')
+
+
 # Flask-Login 설정
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -167,18 +181,21 @@ def load_user(user_id):
 def dashboard():
     form = TodoForm()
     filter_type = request.args.get('filter', 'all')
-    query = Todo.query.filter_by(user_id=current_user.id)
-    if filter_type == 'completed':
-        query = query.filter_by(completed=True)
-    elif filter_type == 'pending':
-        query = query.filter_by(completed=False)
-    todos = query.order_by(Todo.created_at.desc()).all()
+    # 사용자의 모든 할 일을 한 번에 조회
+    all_user_todos = Todo.query.filter_by(user_id=current_user.id).order_by(Todo.created_at.desc()).all()
     
-    # 통계 계산 (현재 사용자의 할 일만)
-    all_todos = Todo.query.filter_by(user_id=current_user.id).all()
-    total_todos = len(all_todos)
-    completed_todos = sum(1 for t in all_todos if t.completed)
+    # 통계 계산
+    total_todos = len(all_user_todos)
+    completed_todos = sum(1 for t in all_user_todos if t.completed)
     pending_todos = total_todos - completed_todos
+    
+    # 필터링
+    if filter_type == 'completed':
+        todos = [t for t in all_user_todos if t.completed]
+    elif filter_type == 'pending':
+        todos = [t for t in all_user_todos if not t.completed]
+    else:
+        todos = all_user_todos
     
     return render_template('dashboard.html', todos=todos, form=form, filter_type=filter_type, total_todos=total_todos, completed_todos=completed_todos, pending_todos=pending_todos)
 
