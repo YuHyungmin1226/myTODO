@@ -1,3 +1,15 @@
 2025-08-30 20:43:04,272 - __main__ - INFO - 데이터베이스 테이블이 생성되었습니다.
 2025-08-30 20:43:04,272 - __main__ - ERROR - 데이터베이스 연결 확인 실패: Textual SQL expression 'SELECT 1' should be explicitly declared as text('SELECT 1')
 2025-08-30 20:43:04,272 - __main__ - ERROR - 데이터베이스 초기화 중 오류: 데이터베이스 연결에 실패했습니다.
+2025-08-30 20:43:26,859 - __main__ - INFO - 데이터베이스 테이블이 생성되었습니다.
+2025-08-30 20:43:26,860 - __main__ - ERROR - 데이터베이스 연결 확인 실패: Textual SQL expression 'SELECT 1' should be explicitly declared as text('SELECT 1')
+2025-08-30 20:43:26,860 - __main__ - ERROR - 데이터베이스 초기화 중 오류: 데이터베이스 연결에 실패했습니다.
+2025-08-30 20:46:09,322 - __main__ - INFO - 데이터베이스 테이블이 생성되었습니다.
+2025-08-30 20:46:09,328 - __main__ - INFO - 서버 시작: 0.0.0.0:5002
+2025-08-30 20:46:09,351 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://192.168.0.208:5002
+2025-08-30 20:46:09,351 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-30 20:46:14,739 - werkzeug - INFO - 192.168.0.208 - - [30/Aug/2025 20:46:14] "GET / HTTP/1.1" 200 -
+2025-08-30 20:46:15,526 - werkzeug - INFO - 192.168.0.208 - - [30/Aug/2025 20:46:15] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
