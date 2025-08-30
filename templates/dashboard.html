@@ -5,6 +5,20 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-10 mx-auto">
+        <!-- 사용자 정보 카드 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-user me-2"></i>{{ current_user.username }}님의 할 일 목록
+                        </h5>
+                        <p class="card-text text-muted">{{ current_user.email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 통계 카드 -->
         <div class="row mb-4">
             <div class="col-md-4">
