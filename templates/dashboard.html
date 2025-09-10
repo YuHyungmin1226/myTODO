@@ -115,19 +115,15 @@
                 {% if todos %}
                     <div class="todo-list">
                         {% for todo in todos %}
-                        <div class="card todo-item {% if todo.completed %}bg-light{% endif %}">
+                        <div class="card todo-item{% if todo.completed %} bg-light completed{% endif %}">
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <div class="todo-content {% if todo.completed %}completed{% endif %}">
+                                        <div class="todo-content">
                                             <p class="mb-1 flex-grow-1">{{ todo.content }}</p>
                                             <small class="text-muted">
                                                 <i class="fas fa-clock me-1"></i>
-                                                {% if todo.created_at %}
-                                                    {{ todo.created_at | kst }}
-                                                {% else %}
-                                                    날짜 없음
-                                                {% endif %}
+                                                {{ todo.created_at | kst if todo.created_at else '날짜 없음' }}
                                                 {% if todo.completed and todo.completed_at %}
                                                     <span class="ms-2">
                                                         <i class="fas fa-check-circle text-success me-1"></i>
@@ -139,25 +135,18 @@
                                     </div>
                                     <div class="col-md-4 text-end">
                                         {% if not todo.completed %}
-                                            <a href="{{ url_for('complete_todo', todo_id=todo.id) }}" 
-                                               class="btn btn-success btn-sm me-2"
-                                               onclick="return confirm('이 할 일을 완료하시겠습니까?')">
+                                            <a href="{{ url_for('complete_todo', todo_id=todo.id) }}" class="btn btn-success btn-sm me-2" onclick="return confirm('이 할 일을 완료하시겠습니까?')">
                                                 <i class="fas fa-check me-1"></i>완료
                                             </a>
-                                            <a href="{{ url_for('edit_todo', todo_id=todo.id) }}" 
-                                               class="btn btn-info btn-sm me-2">
+                                            <a href="{{ url_for('edit_todo', todo_id=todo.id) }}" class="btn btn-info btn-sm me-2">
                                                 <i class="fas fa-edit me-1"></i>수정
                                             </a>
                                         {% else %}
-                                            <a href="{{ url_for('uncomplete_todo', todo_id=todo.id) }}" 
-                                               class="btn btn-warning btn-sm me-2"
-                                               onclick="return confirm('이 할 일을 미완료로 변경하시겠습니까?')">
+                                            <a href="{{ url_for('uncomplete_todo', todo_id=todo.id) }}" class="btn btn-warning btn-sm me-2" onclick="return confirm('이 할 일을 미완료로 변경하시겠습니까?')">
                                                 <i class="fas fa-undo me-1"></i>취소
                                             </a>
                                         {% endif %}
-                                        <a href="{{ url_for('delete_todo', todo_id=todo.id) }}" 
-                                           class="btn btn-danger btn-sm"
-                                           onclick="return confirm('정말 삭제하시겠습니까?')">
+                                        <a href="{{ url_for('delete_todo', todo_id=todo.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('정말 삭제하시겠습니까?')">
                                             <i class="fas fa-trash me-1"></i>삭제
                                         </a>
                                     </div>
@@ -213,4 +202,38 @@
         }
     }
 </style>
-{% endblock %} 
+        <!-- 페이징 네비게이션 -->
+        <nav aria-label="할 일 페이지 네비게이션" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard', filter=filter_type, page=page-1, per_page=per_page) }}" aria-label="이전">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+                {% endif %}
+
+                {% for p in range(1, pages+1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('dashboard', filter=filter_type, page=p, per_page=per_page) }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+
+                {% if has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('dashboard', filter=filter_type, page=page+1, per_page=per_page) }}" aria-label="다음">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+{% endblock %}

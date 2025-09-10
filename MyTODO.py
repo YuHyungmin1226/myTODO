@@ -181,23 +181,45 @@ def load_user(user_id):
 def dashboard():
     form = TodoForm()
     filter_type = request.args.get('filter', 'all')
-    # 사용자의 모든 할 일을 한 번에 조회
-    all_user_todos = Todo.query.filter_by(user_id=current_user.id).order_by(Todo.created_at.desc()).all()
-    
-    # 통계 계산
-    total_todos = len(all_user_todos)
-    completed_todos = sum(1 for t in all_user_todos if t.completed)
-    pending_todos = total_todos - completed_todos
-    
-    # 필터링
-    if filter_type == 'completed':
-        todos = [t for t in all_user_todos if t.completed]
-    elif filter_type == 'pending':
-        todos = [t for t in all_user_todos if not t.completed]
-    else:
-        todos = all_user_todos
-    
-    return render_template('dashboard.html', todos=todos, form=form, filter_type=filter_type, total_todos=total_todos, completed_todos=completed_todos, pending_todos=pending_todos)
+    try:
+        # 페이징 파라미터
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+
+        # 통계: DB에서 직접 집계
+        total_todos = db.session.query(Todo).filter_by(user_id=current_user.id).count()
+        completed_todos = db.session.query(Todo).filter_by(user_id=current_user.id, completed=True).count()
+        pending_todos = total_todos - completed_todos
+
+        # 필터링: DB에서 직접 수행 + 페이징
+        query = Todo.query.filter_by(user_id=current_user.id)
+        if filter_type == 'completed':
+            query = query.filter_by(completed=True)
+        elif filter_type == 'pending':
+            query = query.filter_by(completed=False)
+        query = query.order_by(Todo.created_at.desc())
+
+        todos_pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        todos = todos_pagination.items
+
+        return render_template(
+            'dashboard.html',
+            todos=todos,
+            form=form,
+            filter_type=filter_type,
+            total_todos=total_todos,
+            completed_todos=completed_todos,
+            pending_todos=pending_todos,
+            page=page,
+            per_page=per_page,
+            pages=todos_pagination.pages,
+            has_prev=todos_pagination.has_prev,
+            has_next=todos_pagination.has_next
+        )
+    except Exception as e:
+        logger.error(f"대시보드 조회 중 오류: {e}")
+        flash('대시보드 정보를 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('dashboard.html', todos=[], form=form, filter_type=filter_type, total_todos=0, completed_todos=0, pending_todos=0, page=1, per_page=10, pages=1, has_prev=False, has_next=False)
 
 # 할 일 관리
 @app.route('/add_todo', methods=['POST'])
