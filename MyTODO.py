@@ -175,8 +175,14 @@ class RegisterForm(FlaskForm):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# 메인 대시보드
 @app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+# 메인 대시보드
+@app.route('/dashboard')
 @login_required
 def dashboard():
     form = TodoForm()
